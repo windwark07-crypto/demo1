@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>업무 시스템</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.3.4/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.3.4/styles/ag-theme-quartz.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="app-shell"
+     th:attr="data-initial-url=${initialPageUrl}, data-initial-page=${initialPageKey}">
+    <aside class="sidebar">
+        <nav class="menu" aria-label="주 메뉴">
+            <button type="button"
+                    class="menu-item"
+                    th:each="menu : ${menus}"
+                    th:text="${menu.name()}"
+                    th:attr="data-url=${menu.fragmentUrl()}, data-page=${menu.pageKey()}">
+                메뉴
+            </button>
+        </nav>
+    </aside>
+
+    <div class="content-shell">
+        <header class="topbar">
+            <div>
+                <strong>관리자 콘솔</strong>
+                <span>Fragment + REST API + AG Grid</span>
+            </div>
+        </header>
+
+        <main id="mainContent" class="main-content" aria-live="polite">
+            <div class="loading">화면을 불러오는 중입니다.</div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.3.4/dist/ag-grid-community.min.js"></script>
+<script th:src="@{/js/common/common.js}"></script>
+</body>
+</html>

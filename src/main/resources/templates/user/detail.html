@@ -1,0 +1,19 @@
+<section th:fragment="content" class="page-section">
+    <div class="page-header">
+        <div>
+            <h1>사용자 상세</h1>
+            <p>상세/등록/수정 화면 Fragment 예시입니다.</p>
+        </div>
+        <div class="button-group">
+            <button type="button" class="secondary-button">삭제</button>
+            <button type="button" class="primary-button">저장</button>
+        </div>
+    </div>
+
+    <form class="detail-form">
+        <label>사용자 ID<input value="user01"></label>
+        <label>사용자명<input value="홍길동"></label>
+        <label>권한<select><option>관리자</option><option>업무담당자</option></select></label>
+        <label>상태<select><option>사용</option><option>중지</option></select></label>
+    </form>
+</section>
