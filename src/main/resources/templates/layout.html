@@ -4,8 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>업무 시스템</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.3.4/styles/ag-grid.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.3.4/styles/ag-theme-quartz.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tui-grid@4.21.22/dist/tui-grid.min.css">
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
@@ -24,20 +23,14 @@
     </aside>
 
     <div class="content-shell">
-        <header class="topbar">
-            <div>
-                <strong>관리자 콘솔</strong>
-                <span>Fragment + REST API + AG Grid</span>
-            </div>
-        </header>
-
         <main id="mainContent" class="main-content" aria-live="polite">
             <div class="loading">화면을 불러오는 중입니다.</div>
         </main>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.3.4/dist/ag-grid-community.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tui-grid@4.21.22/dist/tui-grid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
 <script th:src="@{/js/common/common.js}"></script>
 </body>
 </html>

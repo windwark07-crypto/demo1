@@ -1,7 +1,7 @@
 window.AppPages = window.AppPages || {};
 
 window.AppPages.orderList = {
-    gridApi: null,
+    grid: null,
 
     init() {
         this.initGrid();
@@ -11,24 +11,17 @@ window.AppPages.orderList = {
 
     initGrid() {
         const gridElement = document.querySelector("#orderGrid");
-        const gridOptions = {
-            defaultColDef: {
-                flex: 1,
-                minWidth: 140,
-                sortable: true,
-                filter: true,
-                resizable: true
-            },
-            columnDefs: [
-                {field: "orderId", headerName: "주문 ID"},
-                {field: "customerName", headerName: "고객명"},
-                {field: "orderDate", headerName: "주문일"},
-                {field: "status", headerName: "상태"}
+        this.grid = new tui.Grid({
+            el: gridElement,
+            bodyHeight: 460,
+            columns: [
+                {name: "orderId", header: "주문 ID", minWidth: 180, sortable: true},
+                {name: "customerName", header: "고객명", minWidth: 140, sortable: true},
+                {name: "orderDate", header: "주문일", minWidth: 140, sortable: true},
+                {name: "status", header: "상태", minWidth: 100, sortable: true}
             ],
-            rowData: []
-        };
-
-        this.gridApi = agGrid.createGrid(gridElement, gridOptions);
+            data: []
+        });
     },
 
     bindEvents() {
@@ -36,8 +29,7 @@ window.AppPages.orderList = {
     },
 
     async loadData() {
-        const response = await fetch("/api/orders");
-        const rows = await response.json();
-        this.gridApi.setGridOption("rowData", rows);
+        const response = await Api.get("/orders");
+        this.grid.resetData(response.data);
     }
 };

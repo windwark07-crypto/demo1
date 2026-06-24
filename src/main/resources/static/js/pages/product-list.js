@@ -1,7 +1,7 @@
 window.AppPages = window.AppPages || {};
 
 window.AppPages.productList = {
-    gridApi: null,
+    grid: null,
 
     init() {
         this.initGrid();
@@ -11,24 +11,24 @@ window.AppPages.productList = {
 
     initGrid() {
         const gridElement = document.querySelector("#productGrid");
-        const gridOptions = {
-            defaultColDef: {
-                flex: 1,
-                minWidth: 130,
-                sortable: true,
-                filter: true,
-                resizable: true
-            },
-            columnDefs: [
-                {field: "productId", headerName: "상품 ID"},
-                {field: "productName", headerName: "상품명"},
-                {field: "category", headerName: "분류"},
-                {field: "price", headerName: "가격", valueFormatter: params => Number(params.value).toLocaleString()}
+        this.grid = new tui.Grid({
+            el: gridElement,
+            bodyHeight: 460,
+            columns: [
+                {name: "productId", header: "상품 ID", minWidth: 130, sortable: true},
+                {name: "productName", header: "상품명", minWidth: 180, sortable: true},
+                {name: "category", header: "분류", minWidth: 130, sortable: true},
+                {
+                    name: "price",
+                    header: "가격",
+                    minWidth: 120,
+                    align: "right",
+                    sortable: true,
+                    formatter: ({value}) => Number(value).toLocaleString()
+                }
             ],
-            rowData: []
-        };
-
-        this.gridApi = agGrid.createGrid(gridElement, gridOptions);
+            data: []
+        });
     },
 
     bindEvents() {
@@ -36,8 +36,7 @@ window.AppPages.productList = {
     },
 
     async loadData() {
-        const response = await fetch("/api/products");
-        const rows = await response.json();
-        this.gridApi.setGridOption("rowData", rows);
+        const response = await Api.get("/products");
+        this.grid.resetData(response.data);
     }
 };

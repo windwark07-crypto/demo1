@@ -1,7 +1,7 @@
 window.AppPages = window.AppPages || {};
 
 window.AppPages.userList = {
-    gridApi: null,
+    grid: null,
 
     init() {
         this.initGrid();
@@ -11,24 +11,17 @@ window.AppPages.userList = {
 
     initGrid() {
         const gridElement = document.querySelector("#userGrid");
-        const gridOptions = {
-            defaultColDef: {
-                flex: 1,
-                minWidth: 120,
-                sortable: true,
-                filter: true,
-                resizable: true
-            },
-            columnDefs: [
-                {field: "userId", headerName: "사용자 ID"},
-                {field: "userName", headerName: "사용자명"},
-                {field: "roleName", headerName: "권한"},
-                {field: "status", headerName: "상태"}
+        this.grid = new tui.Grid({
+            el: gridElement,
+            bodyHeight: 460,
+            columns: [
+                {name: "userId", header: "사용자 ID", minWidth: 120, sortable: true},
+                {name: "userName", header: "사용자명", minWidth: 120, sortable: true},
+                {name: "roleName", header: "권한", minWidth: 120, sortable: true},
+                {name: "status", header: "상태", minWidth: 100, sortable: true}
             ],
-            rowData: []
-        };
-
-        this.gridApi = agGrid.createGrid(gridElement, gridOptions);
+            data: []
+        });
     },
 
     bindEvents() {
@@ -36,8 +29,7 @@ window.AppPages.userList = {
     },
 
     async loadData() {
-        const response = await fetch("/api/users");
-        const rows = await response.json();
-        this.gridApi.setGridOption("rowData", rows);
+        const response = await Api.get("/users");
+        this.grid.resetData(response.data);
     }
 };
