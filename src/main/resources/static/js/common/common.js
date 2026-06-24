@@ -17,7 +17,7 @@
             console.error("API request failed", error);
             return Promise.reject(error);
         }
-    );git config --global user.name "Your Name"
+    );
 
     // pageKey(userList)를 파일명 규칙(user-list)으로 변환한다.
     function toKebabCase(value) {
