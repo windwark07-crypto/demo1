@@ -9,6 +9,7 @@ public class MenuService {
 
     public List<MenuItem> findMenus() {
         return List.of(
+                new MenuItem("home", "홈", "/home", "home", "홈"),
                 new MenuItem("user-list", "사용자 목록", "/user/list", "userList", "사용자"),
                 new MenuItem("user-detail", "사용자 상세", "/user/detail", "userDetail", "사용자"),
                 new MenuItem("product-list", "상품 목록", "/product/list", "productList", "상품"),

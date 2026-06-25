@@ -69,11 +69,7 @@ Thymeleaf는 화면 Layout 및 Fragment만 담당한다.
 
 우선 고려
 
-* AG Grid
-
-대안
-
-* RealGrid
+* Toast UI Grid
 
 ---
 

@@ -202,6 +202,37 @@ select {
     border: 1px solid var(--line);
 }
 
+.home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.home-card {
+    display: grid;
+    gap: 8px;
+    padding: 20px;
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.home-card:hover {
+    border-color: var(--accent);
+}
+
+.home-card-title {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.home-card-desc {
+    color: var(--muted);
+    font-size: 13px;
+}
+
 .loading {
     padding: 24px;
     color: var(--muted);
