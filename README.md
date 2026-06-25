@@ -147,3 +147,145 @@ window.AppPages.customerList = {
 ```text
 Page script not found: /js/pages/customer-list.js
 ```
+
+## fragment 내부에서 화면 전환 (AppRouter)
+
+좌측 메뉴 클릭 외에, fragment 내부의 버튼이나 Grid에서도 다른 화면으로 전환할 수 있도록 `common.js`가 라우터를 전역으로 노출한다.
+
+```javascript
+window.AppRouter = {
+    navigate(url, pageKey) {
+        return go(url, pageKey, true);
+    }
+};
+```
+
+화면별 JS 어디서든 아래처럼 호출하면 메인 영역이 교체된다.
+
+```javascript
+AppRouter.navigate("/user/detail", "userDetail");
+```
+
+`navigate()`는 내부 단일 진입점 `go(url, pageKey, push)`를 호출한다. `go()`는 메뉴 active 동기화 → 브라우저 히스토리 기록 → fragment 로드 → `init()` 실행을 한 번에 처리한다.
+
+## 선언적 화면 전환 (data 속성 위임)
+
+`AppRouter.navigate()`를 직접 호출하는 대신, HTML 속성만 선언해 화면을 전환할 수도 있다. `common.js`가 `document`에 클릭 리스너를 **한 번만** 등록해 `data-nav-url` 속성을 가진 요소 클릭을 위임으로 처리한다.
+
+```javascript
+// common.js: 한 번만 등록 (fragment가 교체돼도 재바인딩 불필요)
+function bindNav() {
+    document.addEventListener("click", (event) => {
+        const nav = event.target.closest("[data-nav-url]");
+        if (!nav) {
+            return;
+        }
+        go(nav.dataset.navUrl, nav.dataset.navPage, true);
+    });
+}
+```
+
+fragment에서는 속성만 선언하면 되고, 별도 JS가 필요 없다.
+
+```html
+<button type="button" data-nav-url="/user/detail" data-nav-page="userDetail">상세</button>
+```
+
+> 메뉴 버튼은 `data-url`/`data-page`(개별 바인딩)를 그대로 쓰고, 위임 방식은 `data-nav-url`/`data-nav-page`로 속성명을 구분해 충돌을 막는다.
+
+두 방식은 함께 쓴다. 정적인 바로가기는 `data-nav-*` 속성으로 선언하고, 클릭 시점에 값이 정해지는 동적 이동(예: 선택한 Grid 행 id)은 `AppRouter.navigate()`를 직접 호출한다.
+
+## 목록 → 상세 화면 이동
+
+화면 간 선택 데이터는 `window.AppContext` 공유 객체로 전달한다. 사용자 목록에서 Grid 행을 클릭하면 선택한 행을 `AppContext`에 담고 상세 화면으로 이동한다.
+
+```javascript
+// user-list.js
+this.grid.on("click", (ev) => {
+    if (ev.rowKey == null) {
+        return;
+    }
+    window.AppContext = window.AppContext || {};
+    window.AppContext.selectedUser = this.grid.getRow(ev.rowKey);
+    AppRouter.navigate("/user/detail", "userDetail");
+});
+```
+
+상세 화면은 `init()` 시점에 `AppContext`를 읽어 폼을 채우고, "목록" 버튼으로 다시 돌아간다.
+
+```javascript
+// user-detail.js
+fillForm() {
+    const user = (window.AppContext && window.AppContext.selectedUser) || {};
+    this.setValue("#detailUserId", user.userId);
+    this.setValue("#detailUserName", user.userName);
+    // ...
+}
+```
+
+## 딥링크와 브라우저 뒤로가기 (History API)
+
+화면 전환 시 주소창 URL을 실제로 변경해, 북마크·URL 공유·새로고침·뒤로가기를 지원한다.
+
+### 클라이언트
+
+`go()`는 화면 전환 시 `history.pushState`로 실제 URL을 기록하고, 선택 데이터(`AppContext`)도 state에 함께 저장한다. 뒤로/앞으로 가기는 `popstate`에서 그 state로 화면과 컨텍스트를 복원한다.
+
+```javascript
+async function go(url, pageKey, push) {
+    syncActiveMenu(pageKey);
+    if (push) {
+        history.pushState({url, pageKey, context: window.AppContext || {}}, "", url);
+    }
+    await loadPage(url, pageKey);
+}
+
+window.addEventListener("popstate", (event) => {
+    const state = event.state;
+    if (!state || !state.pageKey) {
+        return;
+    }
+    window.AppContext = state.context || {};
+    go(state.url, state.pageKey, false);
+});
+```
+
+### 서버
+
+같은 URL(`/user/list`)이 요청 유형에 따라 두 가지로 응답한다. 그래서 주소창을 바꿔도 새로고침·직접 진입이 깨지지 않는다.
+
+| 요청 | 식별 | 응답 |
+| --- | --- | --- |
+| fetch(fragment) | `X-Requested-With: fetch` 헤더 있음 | `template :: content` fragment |
+| 직접 진입 / 새로고침 | 헤더 없음 | 해당 화면을 초기 화면으로 한 전체 `layout` |
+
+```java
+// PageController
+private boolean isFragmentRequest(HttpServletRequest request) {
+    return "fetch".equals(request.getHeader("X-Requested-With"));
+}
+
+private String render(HttpServletRequest request, String viewPath, String pageKey, Model model) {
+    if (isFragmentRequest(request)) {
+        return viewPath + " :: content";
+    }
+    model.addAttribute("menus", menuService.findMenus());
+    model.addAttribute("initialPageUrl", request.getRequestURI());
+    model.addAttribute("initialPageKey", pageKey);
+    return "layout";
+}
+```
+
+> 딥링크 범위는 목록/상위 화면까지다. 상세 화면(`/user/detail`)을 URL로 직접 진입하면 레이아웃은 정상 로드되지만 선택 컨텍스트가 없어 빈 폼으로 표시된다.
+
+## 홈 화면
+
+루트 경로(`/`)는 홈(대시보드) 화면으로 진입한다.
+
+```text
+/            -> layout (초기 화면 /home)
+/home        -> home :: content fragment
+pageKey      -> home
+```
+
+홈의 바로가기 카드는 위의 **선언적 위임 방식**(`data-nav-url`/`data-nav-page`)으로 각 업무 화면에 이동한다. 별도 바인딩 JS가 없어 `/js/pages/home.js`는 두지 않는다(`common.js`가 콘솔 경고만 출력). 좌측 메뉴 맨 위 "홈" 항목으로 언제든 복귀할 수 있다.

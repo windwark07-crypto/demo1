@@ -115,6 +115,18 @@
         });
     }
 
+    // 선언적 화면 전환: data-nav-url / data-nav-page 속성을 가진 요소 클릭을 위임으로 처리한다.
+    // document에 한 번만 등록되므로, fragment가 교체돼도 재바인딩 없이 항상 동작한다.
+    function bindNav() {
+        document.addEventListener("click", (event) => {
+            const nav = event.target.closest("[data-nav-url]");
+            if (!nav) {
+                return;
+            }
+            go(nav.dataset.navUrl, nav.dataset.navPage, true);
+        });
+    }
+
     // 브라우저 뒤로/앞으로 가기 시 히스토리 상태로 화면을 복원한다.
     window.addEventListener("popstate", (event) => {
         const state = event.state;
@@ -129,6 +141,7 @@
     // 최초 진입 시 기본 메뉴를 활성화하고 초기 화면을 로드한다.
     document.addEventListener("DOMContentLoaded", async () => {
         bindMenu();
+        bindNav();
 
         const shell = document.querySelector(".app-shell");
         const initialUrl = shell.dataset.initialUrl;
